@@ -21,10 +21,12 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=CORS_ORIGINS,
+    allow_origin_regex=r"https?://.*",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Serve uploaded static media files
 app.mount("/uploads", StaticFiles(directory=UPLOAD_DIR), name="uploads")
