@@ -1,4 +1,9 @@
-export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+const DEFAULT_BACKEND_URL = 'https://findback-ai-qw1x.onrender.com';
+const envApiUrl = import.meta.env.VITE_API_URL;
+
+// Normalize API_BASE_URL to strip trailing slash and default to production Render URL
+const rawApiUrl = envApiUrl && envApiUrl.trim() !== '' ? envApiUrl.trim() : DEFAULT_BACKEND_URL;
+export const API_BASE_URL = rawApiUrl.endsWith('/') ? rawApiUrl.slice(0, -1) : rawApiUrl;
 
 export function getImageUrl(url) {
   if (!url) return '';
@@ -20,9 +25,12 @@ export async function apiFetch(endpoint, options = {}) {
     headers['Content-Type'] = 'application/json';
   }
 
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
+  const fullUrl = `${API_BASE_URL}${cleanEndpoint}`;
+
   let response;
   try {
-    response = await fetch(`${API_BASE_URL}${endpoint}`, {
+    response = await fetch(fullUrl, {
       ...options,
       headers,
     });
@@ -51,3 +59,4 @@ export async function apiFetch(endpoint, options = {}) {
 
   return response.json();
 }
+

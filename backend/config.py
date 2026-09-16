@@ -20,9 +20,20 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 HIGH_MATCH_THRESHOLD = 0.80
 
 # Application Base URL (for CORS and OAuth redirect verification)
-APP_URL = os.getenv("APP_URL", "http://localhost:5173")
-CORS_ORIGINS_RAW = os.getenv("CORS_ORIGINS", "http://localhost:5173,http://localhost:3000")
-CORS_ORIGINS = [origin.strip() for origin in CORS_ORIGINS_RAW.split(",") if origin.strip()]
+APP_URL = os.getenv("APP_URL", "https://findback-ai-beta.vercel.app")
+DEFAULT_CORS_ORIGINS = [
+    "https://findback-ai-beta.vercel.app",
+    "https://findback-ai.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000",
+]
+CORS_ORIGINS_RAW = os.getenv("CORS_ORIGINS", "")
+if CORS_ORIGINS_RAW:
+    configured = [origin.strip() for origin in CORS_ORIGINS_RAW.split(",") if origin.strip()]
+    CORS_ORIGINS = list(dict.fromkeys(configured + DEFAULT_CORS_ORIGINS))
+else:
+    CORS_ORIGINS = DEFAULT_CORS_ORIGINS
+
 
 # Google OAuth 2.0 / OpenID Connect credentials
 GOOGLE_CLIENT_ID = os.getenv("GOOGLE_CLIENT_ID", "")
