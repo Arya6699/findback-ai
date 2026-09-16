@@ -1,9 +1,26 @@
 const DEFAULT_BACKEND_URL = 'https://findback-ai-qw1x.onrender.com';
-const envApiUrl = import.meta.env.VITE_API_URL;
+const envApiUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.trim() : '';
 
-// Normalize API_BASE_URL to strip trailing slash and default to production Render URL
-const rawApiUrl = envApiUrl && envApiUrl.trim() !== '' ? envApiUrl.trim() : DEFAULT_BACKEND_URL;
-export const API_BASE_URL = rawApiUrl.endsWith('/') ? rawApiUrl.slice(0, -1) : rawApiUrl;
+function getNormalizedApiUrl() {
+  const isBrowser = typeof window !== 'undefined';
+  const isProduction = isBrowser && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1';
+
+  let url = envApiUrl || DEFAULT_BACKEND_URL;
+
+  // In production (e.g. Vercel deployment), strictly enforce production HTTPS backend
+  if (isProduction) {
+    if (!url || url.includes('localhost') || url.includes('127.0.0.1')) {
+      url = DEFAULT_BACKEND_URL;
+    }
+    if (url.startsWith('http://')) {
+      url = url.replace('http://', 'https://');
+    }
+  }
+
+  return url.endsWith('/') ? url.slice(0, -1) : url;
+}
+
+export const API_BASE_URL = getNormalizedApiUrl();
 
 export function getImageUrl(url) {
   if (!url) return '';
@@ -35,7 +52,8 @@ export async function apiFetch(endpoint, options = {}) {
       headers,
     });
   } catch (err) {
-    throw new Error('Unable to connect to the authentication server. Please verify backend is running.');
+    console.error('API Fetch network error:', fullUrl, err);
+    throw new Error(`Unable to connect to backend server (${fullUrl}). Please verify backend is running.`);
   }
 
   if (!response.ok) {
@@ -59,4 +77,5 @@ export async function apiFetch(endpoint, options = {}) {
 
   return response.json();
 }
+
 

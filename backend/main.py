@@ -4,12 +4,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from backend.config import UPLOAD_DIR, CORS_ORIGINS
-from backend.database.database import engine, Base, check_and_migrate_db
+from backend.database.database import engine, Base, check_and_migrate_db, seed_initial_users_if_empty
 from backend.api import auth, items, matches, notifications, admin
 
-# Create database tables automatically & migrate missing columns
+# Create database tables automatically, migrate missing columns & seed demo users
 Base.metadata.create_all(bind=engine)
 check_and_migrate_db()
+seed_initial_users_if_empty()
+
 
 app = FastAPI(
     title="AI-Powered Lost & Found Matching System",

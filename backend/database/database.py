@@ -26,6 +26,26 @@ def check_and_migrate_db():
     except Exception as e:
         print(f"[Migration Warning] {e}")
 
+def seed_initial_users_if_empty():
+    try:
+        from backend.models.models import User
+        from backend.services.auth_service import hash_password
+        db = SessionLocal()
+        user_count = db.query(User).count()
+        if user_count == 0:
+            print("[AutoSeed] Seeding default demo accounts...")
+            admin = User(email="admin@college.edu", password_hash=hash_password("admin123"), full_name="Campus Admin Officer", role="admin")
+            alice = User(email="alice@college.edu", password_hash=hash_password("alice123"), full_name="Alice Smith", role="user")
+            bob = User(email="bob@college.edu", password_hash=hash_password("bob123"), full_name="Bob Johnson", role="user")
+            charlie = User(email="charlie@college.edu", password_hash=hash_password("charlie123"), full_name="Charlie Davis", role="user")
+            db.add_all([admin, alice, bob, charlie])
+            db.commit()
+            print("[AutoSeed] Default demo accounts successfully created!")
+        db.close()
+    except Exception as e:
+        print(f"[AutoSeed Warning] {e}")
+
+
 def get_db():
     db = SessionLocal()
     try:
