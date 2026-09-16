@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { apiFetch } from '../api/api';
+import { apiFetch, getImageUrl } from '../api/api';
 import { AlertCircle, PlusCircle, Calendar, MapPin, Tag, Sparkles, Layers, CheckCircle } from 'lucide-react';
 
 export default function MyReports() {
@@ -72,7 +72,7 @@ export default function MyReports() {
               }}>
                 {item.image_url ? (
                   <img
-                    src={item.image_url}
+                    src={getImageUrl(item.image_url)}
                     alt={item.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />

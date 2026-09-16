@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { apiFetch } from '../api/api';
+import { apiFetch, getImageUrl } from '../api/api';
 import { 
   Search, Filter, AlertCircle, PlusCircle, Calendar, MapPin, Tag, 
   Image as ImageIcon, Sparkles, CheckCircle2, Cpu, ShieldCheck, 
@@ -909,7 +909,7 @@ export default function Home() {
               }}>
                 {item.image_url ? (
                   <img
-                    src={item.image_url}
+                    src={getImageUrl(item.image_url)}
                     alt={item.name}
                     style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />

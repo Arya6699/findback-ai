@@ -3,23 +3,12 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Mail, Lock, AlertCircle, Cpu, ArrowLeft, CheckCircle2, Loader2, Sparkles, ShieldCheck, Zap } from 'lucide-react';
 
-// Google "G" logo SVG component
-const GoogleLogo = () => (
-  <svg width="18" height="18" viewBox="0 0 48 48">
-    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
-    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
-    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/>
-    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
-  </svg>
-);
-
 export default function Login() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
-  const [googleLoading, setGoogleLoading] = useState(false);
-  const { login, googleLogin } = useAuth();
+  const { login } = useAuth();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -41,72 +30,7 @@ export default function Login() {
     setPassword(demoPassword);
   };
 
-  const handleGoogleLogin = async () => {
-    setError('');
-    setGoogleLoading(true);
 
-    let clientId = import.meta.env.VITE_GOOGLE_CLIENT_ID || window.__GOOGLE_CLIENT_ID__ || '';
-
-    if (!clientId) {
-      try {
-        const configResp = await fetch('/api/auth/config');
-        if (configResp.ok) {
-          const configData = await configResp.json();
-          clientId = configData.google_client_id || '';
-        }
-      } catch (e) {
-        // ignore fetch failure
-      }
-    }
-
-    if (!clientId) {
-      setError('Google OAuth is not configured on the server. Please set GOOGLE_CLIENT_ID in backend/.env.');
-      setGoogleLoading(false);
-      return;
-    }
-
-    if (!window.google?.accounts?.id) {
-      setError('Google Identity Services SDK is loading. Please refresh the page in a moment.');
-      setGoogleLoading(false);
-      return;
-    }
-
-    try {
-      window.google.accounts.id.initialize({
-        client_id: clientId,
-        callback: async (response) => {
-          if (!response.credential) {
-            setError('Google authentication was cancelled.');
-            setGoogleLoading(false);
-            return;
-          }
-          try {
-            await googleLogin(response.credential);
-            navigate('/');
-          } catch (err) {
-            setError(err.message || 'Google authentication failed.');
-            setGoogleLoading(false);
-          }
-        },
-      });
-
-      window.google.accounts.id.prompt((notification) => {
-        if (notification.isDismissedMoment()) {
-          const reason = notification.getDismissReason();
-          if (reason !== 'credential_returned') {
-            setError('Google sign-in prompt was closed.');
-            setGoogleLoading(false);
-          }
-        } else if (notification.isNotDisplayed()) {
-          setError('Google Sign-In prompt is suppressed. Check your popup/cookie settings.');
-          setGoogleLoading(false);
-        }
-      });
-    } catch (err) {
-      setError(err.message || 'Google authentication failed.');
-      setGoogleLoading(false);
-    }
-  };
 
   return (
     <div style={{
@@ -319,50 +243,7 @@ export default function Login() {
                 </div>
               )}
 
-              {/* Google OAuth Button */}
-              <button
-                id="google-login-btn"
-                type="button"
-                onClick={handleGoogleLogin}
-                disabled={googleLoading || loading}
-                style={{
-                  width: '100%',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  gap: '12px',
-                  padding: '12px 20px',
-                  background: '#FFFFFF',
-                  border: '1px solid #D1D5DB',
-                  borderRadius: '12px',
-                  fontSize: '0.92rem',
-                  fontWeight: 600,
-                  fontFamily: 'Inter, sans-serif',
-                  color: '#1F2937',
-                  cursor: googleLoading ? 'not-allowed' : 'pointer',
-                  transition: 'all 0.2s ease',
-                  opacity: googleLoading ? 0.7 : 1,
-                  boxShadow: '0 1px 3px rgba(0,0,0,0.05)',
-                  marginBottom: '20px'
-                }}
-                onMouseEnter={(e) => { if (!googleLoading) { e.currentTarget.style.background = '#F9FAFB'; e.currentTarget.style.borderColor = '#9CA3AF'; e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)'; }}}
-                onMouseLeave={(e) => { e.currentTarget.style.background = '#FFFFFF'; e.currentTarget.style.borderColor = '#D1D5DB'; e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.05)'; }}
-              >
-                {googleLoading ? <Loader2 size={18} style={{ animation: 'spin 1s linear infinite' }} /> : <GoogleLogo />}
-                {googleLoading ? 'Signing in...' : 'Continue with Google'}
-              </button>
 
-              {/* OR Divider */}
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '16px',
-                marginBottom: '20px'
-              }}>
-                <div style={{ flex: 1, height: '1px', background: '#E2E8F0' }} />
-                <span style={{ fontSize: '0.75rem', fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em' }}>OR</span>
-                <div style={{ flex: 1, height: '1px', background: '#E2E8F0' }} />
-              </div>
 
               {/* Quick Demo Sign-In options */}
               <div style={{
@@ -442,7 +323,7 @@ export default function Login() {
 
                 <button
                   type="submit"
-                  disabled={loading || googleLoading}
+                  disabled={loading}
                   className="btn btn-primary"
                   style={{
                     width: '100%',

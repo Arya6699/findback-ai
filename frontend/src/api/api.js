@@ -1,4 +1,11 @@
-const API_BASE_URL = '';
+export const API_BASE_URL = import.meta.env.VITE_API_URL || '';
+
+export function getImageUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  const path = url.startsWith('/') ? url : `/${url}`;
+  return `${API_BASE_URL}${path}`;
+}
 
 export async function apiFetch(endpoint, options = {}) {
   const token = localStorage.getItem('access_token');
